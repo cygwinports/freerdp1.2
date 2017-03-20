@@ -1,0 +1,150 @@
+--- origsrc/FreeRDP-1.2.0-beta1-android9/winpr/include/winpr/library.h	2014-09-11 17:46:32.000000000 -0500
++++ src/FreeRDP-1.2.0-beta1-android9/winpr/include/winpr/library.h	2017-03-09 15:34:29.389277900 -0600
+@@ -46,27 +46,39 @@ WINPR_API HMODULE LoadLibraryW(LPCWSTR l
+ WINPR_API HMODULE LoadLibraryExA(LPCSTR lpLibFileName, HANDLE hFile, DWORD dwFlags);
+ WINPR_API HMODULE LoadLibraryExW(LPCWSTR lpLibFileName, HANDLE hFile, DWORD dwFlags);
+ 
+-WINPR_API HMODULE GetModuleHandleA(LPCSTR lpModuleName);
+-WINPR_API HMODULE GetModuleHandleW(LPCWSTR lpModuleName);
+-
+-WINPR_API DWORD GetModuleFileNameA(HMODULE hModule, LPSTR lpFilename, DWORD nSize);
+-WINPR_API DWORD GetModuleFileNameW(HMODULE hModule, LPWSTR lpFilename, DWORD nSize);
++#ifdef __cplusplus
++}
++#endif
+ 
+ #ifdef UNICODE
+ #define LoadLibrary		LoadLibraryW
+ #define LoadLibraryEx		LoadLibraryExW
+-#define GetModuleHandle		GetModuleHandleW
+-#define GetModuleFileName	GetModuleFileNameW
+ #else
+ #define LoadLibrary		LoadLibraryA
+ #define LoadLibraryEx		LoadLibraryExA
+-#define GetModuleHandle		GetModuleHandleA
+-#define GetModuleFileName	GetModuleFileNameA
+ #endif
++
++#endif
++
++#if defined(_WIN32) || defined(__CYGWIN__)
++#define WINPR_WINAPI __stdcall __attribute__((dllimport))
++#else
++#define WINPR_WINAPI WINPR_API
++#endif
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++WINPR_WINAPI HMODULE GetModuleHandleA(LPCSTR lpModuleName);
++WINPR_WINAPI HMODULE GetModuleHandleW(LPCWSTR lpModuleName);
++
++WINPR_WINAPI DWORD GetModuleFileNameA(HMODULE hModule, LPSTR lpFilename, DWORD nSize);
++WINPR_WINAPI DWORD GetModuleFileNameW(HMODULE hModule, LPWSTR lpFilename, DWORD nSize);
+ 
+-WINPR_API FARPROC GetProcAddress(HMODULE hModule, LPCSTR lpProcName);
++WINPR_WINAPI FARPROC GetProcAddress(HMODULE hModule, LPCSTR lpProcName);
+ 
+-WINPR_API BOOL FreeLibrary(HMODULE hLibModule);
++WINPR_WINAPI BOOL FreeLibrary(HMODULE hLibModule);
+ 
+ #ifdef __cplusplus
+ }
+@@ -72,6 +80,12 @@ WINPR_API BOOL FreeLibrary(HMODULE hLibM
+ }
+ #endif
+ 
++#ifdef UNICODE
++#define GetModuleHandle		GetModuleHandleW
++#define GetModuleFileName	GetModuleFileNameW
++#else
++#define GetModuleHandle		GetModuleHandleA
++#define GetModuleFileName	GetModuleFileNameA
+ #endif
+ 
+ #endif /* WINPR_LIBRARY_H */
+--- origsrc/FreeRDP-1.2.0-beta1-android9/winpr/libwinpr/handle/handle.c	2014-09-11 17:46:32.000000000 -0500
++++ src/FreeRDP-1.2.0-beta1-android9/winpr/libwinpr/handle/handle.c	2017-03-07 15:15:10.449272600 -0600
+@@ -210,7 +210,7 @@ BOOL CloseHandle(HANDLE hObject)
+ 	{
+ 		WINPR_TIMER* timer;
+ 		timer = (WINPR_TIMER*) Object;
+-#ifdef __linux__
++#if defined(__linux__) || defined(__CYGWIN__)
+ 
+ 		if (timer->fd != -1)
+ 			close(timer->fd);
+--- origsrc/FreeRDP-1.2.0-beta1-android9/winpr/libwinpr/library/library.c	2017-03-07 15:24:08.937829600 -0600
++++ src/FreeRDP-1.2.0-beta1-android9/winpr/libwinpr/library/library.c	2017-03-09 15:18:36.217683000 -0600
+@@ -129,6 +129,9 @@ HMODULE LoadLibraryExW(LPCWSTR lpLibFile
+ {
+ 	return (HMODULE) NULL;
+ }
++#endif
++
++#if !defined(_WIN32) && !defined(__CYGWIN__)
+ 
+ FARPROC GetProcAddress(HMODULE hModule, LPCSTR lpProcName)
+ {
+--- origsrc/FreeRDP-1.2.0-beta1-android9/winpr/libwinpr/sspi/sspi_export.c	2014-09-11 17:46:32.000000000 -0500
++++ src/FreeRDP-1.2.0-beta1-android9/winpr/libwinpr/sspi/sspi_export.c	2017-03-09 15:42:55.235724700 -0600
+@@ -24,6 +24,9 @@
+ #ifdef _WIN32
+ #define SEC_ENTRY __stdcall
+ #define SSPI_EXPORT	__declspec(dllexport)
++#elif defined(__CYGWIN__)
++#define SEC_ENTRY
++#define SSPI_EXPORT	__declspec(dllexport)
+ #else
+ #define SEC_ENTRY
+ #define SSPI_EXPORT
+--- origsrc/FreeRDP-1.2.0-beta1-android9/winpr/libwinpr/synch/synch.h	2014-09-11 17:46:32.000000000 -0500
++++ src/FreeRDP-1.2.0-beta1-android9/winpr/libwinpr/synch/synch.h	2017-03-07 15:15:35.466994900 -0600
+@@ -28,7 +28,7 @@
+ 
+ #include <winpr/synch.h>
+ 
+-#ifdef __linux__
++#if defined(__linux__) || defined(__CYGWIN__)
+ #define WITH_POSIX_TIMER	1
+ #endif
+ 
+--- origsrc/FreeRDP-1.2.0-beta1-android9/winpr/libwinpr/sysinfo/sysinfo.c	2014-09-11 17:46:32.000000000 -0500
++++ src/FreeRDP-1.2.0-beta1-android9/winpr/libwinpr/sysinfo/sysinfo.c	2017-03-07 15:16:31.331129300 -0600
+@@ -25,7 +25,7 @@
+ #include <winpr/sysinfo.h>
+ #include <winpr/platform.h>
+ 
+-#if defined(__linux__) && defined(__GNUC__)
++#if (defined(__linux__) || defined(__CYGWIN__)) && defined(__GNUC__)
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <fcntl.h>
+@@ -96,7 +96,7 @@ static DWORD GetNumberOfProcessors()
+ {
+ 	DWORD numCPUs = 1;
+ 	/* TODO: iOS */
+-#if defined(__linux__) || defined(__sun) || defined(_AIX)
++#if defined(__linux__) || defined(__sun) || defined(_AIX) || defined(__CYGWIN__)
+ 	numCPUs = (DWORD) sysconf(_SC_NPROCESSORS_ONLN);
+ #elif defined(__MACOSX__) || \
+ 	defined(__FreeBSD__) || defined(__NetBSD__) || \
+@@ -337,7 +337,7 @@ BOOL GetSystemTimeAdjustment(PDWORD lpTi
+ DWORD GetTickCount(void)
+ {
+ 	DWORD ticks = 0;
+-#ifdef __linux__
++#if defined(__linux__) || defined(__CYGWIN__)
+ 	struct timespec ts;
+ 
+ 	if (!clock_gettime(CLOCK_MONOTONIC_RAW, &ts))
+@@ -363,7 +363,7 @@ DWORD GetTickCount(void)
+ ULONGLONG GetTickCount64(void)
+ {
+ 	ULONGLONG ticks = 0;
+-#if defined(__linux__)
++#if defined(__linux__) || defined(__CYGWIN__)
+ 	struct timespec ts;
+ 
+ 	if (!clock_gettime(CLOCK_MONOTONIC_RAW, &ts))

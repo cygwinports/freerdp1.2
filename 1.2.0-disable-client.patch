@@ -1,0 +1,15 @@
+--- origsrc/FreeRDP-1.2.0-beta1-android9/CMakeLists.txt	2017-03-16 23:31:05.536678300 -0500
++++ src/FreeRDP-1.2.0-beta1-android9/CMakeLists.txt	2017-03-16 23:51:19.011308100 -0500
+@@ -683,8 +683,11 @@ endif()
+ 
+ include(${CMAKE_CPACK_INCLUDE_FILE})
+ 
+-set(FREERDP_PC_LIBS "-lfreerdp -lfreerdp-client")
++set(FREERDP_PC_LIBS "-lfreerdp"
+ set(WINPR_PC_LIBS "-lwinpr")
++if (WITH_CLIENT)
++	set(FREERDP_PC_LIBS "${FREERDP_PC_LIBS} -lfreerdp-client")
++endif()
+ if (WITH_SERVER)
+ 	set(FREERDP_PC_LIBS "${FREERDP_PC_LIBS} -lfreerdp-server")
+ endif()

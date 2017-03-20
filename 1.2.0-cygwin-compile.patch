@@ -1,0 +1,34 @@
+--- origsrc/FreeRDP-1.2.0-beta1-android7/CMakeLists.txt	2014-06-12 08:51:57.000000000 -0500
++++ src/FreeRDP-1.2.0-beta1-android7/CMakeLists.txt	2014-07-10 20:38:15.339058600 -0500
+@@ -125,7 +125,7 @@ endif()
+ if(CMAKE_COMPILER_IS_GNUCC)
+ 	if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64" OR CMAKE_SYSTEM_PROCESSOR MATCHES "i686")
+ 		if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+-			set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
++			set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_C_COMPILE_OPTIONS_PIC}")
+ 		else()
+ 			set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=i686")
+ 		endif()
+--- origsrc/FreeRDP-1.2.0-beta1-android7/channels/drive/client/drive_file.h	2014-06-12 08:51:57.000000000 -0500
++++ src/FreeRDP-1.2.0-beta1-android7/channels/drive/client/drive_file.h	2014-07-10 20:36:33.076072800 -0500
+@@ -56,7 +56,7 @@
+ typedef UINT32 ssize_t;
+ typedef UINT32 mode_t;
+ 
+-#elif defined(__APPLE__) || defined(__FreeBSD__)
++#elif defined(__APPLE__) || defined(__FreeBSD__) || defined(__CYGWIN__)
+ #define STAT stat
+ #define OPEN open
+ #define LSEEK lseek
+--- origsrc/FreeRDP-1.2.0-beta1-android7/channels/tsmf/client/gstreamer/tsmf_X11.c	2014-06-12 08:51:57.000000000 -0500
++++ src/FreeRDP-1.2.0-beta1-android7/channels/tsmf/client/gstreamer/tsmf_X11.c	2014-07-10 20:41:31.984529400 -0500
+@@ -23,7 +23,9 @@
+ #include <sys/types.h>
+ #include <sys/mman.h>
+ #include <sys/stat.h>
++#ifndef __CYGWIN__
+ #include <sys/syscall.h>
++#endif
+ 
+ #include <unistd.h>
+ #include <fcntl.h>

@@ -1,0 +1,72 @@
+inherit cmake
+
+NAME="freerdp1.2"
+VERSION=1.2.0
+RELEASE=0.1.beta1
+CATEGORY="Net"
+SUMMARY="Remote Desktop Protocol client"
+DESCRIPTION="FreeRDP is a successor to rdesktop, a longtime-favored application
+for use on *nix systems to access Windows servers and workstations. The goal of
+FreeRDP is twofold: a more complete support of keyboard layouts; and support of
+newer Remote Desktop Protocol (RDP) features found in the Windows 6.0
+(Vista/2008) and newer environments."
+HOMEPAGE="http://www.freerdp.com/"
+SRC_URI="https://github.com/FreeRDP/FreeRDP/archive/${VERSION}-beta1+android9/FreeRDP-${VERSION}-beta1+android9.tar.gz"
+SRC_DIR="FreeRDP-${VERSION}-beta1-android9"
+PATCH_URI="
+	1.2.0-cmake-install.patch
+	1.2.0-cygwin-compile.patch
+	1.2.0-cygwin-winpr.patch
+	1.2.0-disable-client.patch
+"
+
+PKG_NAMES="libfreerdp1.2 libfreerdp1.2-devel libwinpr1.1 libwinpr1.1-devel"
+libfreerdp1_2_CONTENTS="usr/bin/cygfreerdp-1.2.dll"
+# should have been libfreerdp-devel, but libfreerdp2-devel was unversioned
+libfreerdp1_2_devel_CONTENTS="
+	usr/include/freerdp/
+	usr/lib/cmake/FreeRDP/
+	usr/lib/libfreerdp.dll.a
+	usr/lib/pkgconfig/freerdp.pc
+	usr/share/doc/${NAME}/
+"
+libwinpr1_1_CONTENTS="usr/bin/cygwinpr-1.1.dll"
+libwinpr1_1_devel_CONTENTS="
+	usr/include/winpr/
+	usr/lib/cmake/WinPR/
+	usr/lib/libwinpr.dll.a
+	usr/lib/pkgconfig/winpr.pc
+"
+
+src_compile() {
+	cd ${B}
+	cygcmake
+	PATH="${B}/client/X11:${B}/client/common:${B}/libfreerdp:${B}/winpr/libwinpr:$PATH" \
+	cygmake
+}
+
+CYGCMAKE_ARGS="
+	-DWITH_ALSA=OFF
+	-DWITH_CHANNELS=OFF
+	-DWITH_CLIENT=OFF
+	-DWITH_CUPS=OFF
+	-DWITH_DIRECTFB=OFF
+	-DWITH_FFMPEG=OFF
+	-DWITH_GSM=ON
+	-DWITH_GSTREAMER_1_0=ON
+	-DWITH_IPP=OFF
+	-DWITH_JPEG=ON
+	-DWITH_OPENSSL=ON
+	-DWITH_PCSC=OFF
+	-DWITH_PULSE=ON
+	-DWITH_X11=ON
+	-DWITH_XCURSOR=ON
+	-DWITH_XEXT=ON
+	-DWITH_XKBFILE=ON
+	-DWITH_XI=ON
+	-DWITH_XINERAMA=ON
+	-DWITH_XRENDER=ON
+	-DWITH_XV=OFF
+	-DWITH_ZLIB=ON
+	-DWITH_SSE2=${ARCH_i686+OFF}${ARCH_x86_64+ON}
+"

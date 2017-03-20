@@ -1,0 +1,85 @@
+--- origsrc/FreeRDP-1.2.0-beta1-android9/client/X11/CMakeLists.txt	2014-09-11 17:46:32.000000000 -0500
++++ src/FreeRDP-1.2.0-beta1-android9/client/X11/CMakeLists.txt	2017-03-07 15:08:12.759828300 -0600
+@@ -62,7 +62,6 @@ if(WITH_CLIENT_INTERFACE)
+   if (WITH_LIBRARY_VERSIONING)
+ 	  set_target_properties(${MODULE_NAME} PROPERTIES VERSION ${FREERDP_VERSION} SOVERSION ${FREERDP_API_VERSION})
+   endif()
+-  set_target_properties(${MODULE_NAME} PROPERTIES PREFIX "lib")
+ else()
+ 	set(${MODULE_PREFIX}_SRCS ${${MODULE_PREFIX}_SRCS} cli/xfreerdp.c cli/xfreerdp.h)
+ 	add_executable(${MODULE_NAME} ${${MODULE_PREFIX}_SRCS})
+@@ -207,7 +206,10 @@ if(WITH_IPP)
+ endif()
+ 
+ if(WITH_CLIENT_INTERFACE)
+-	install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT libraries EXPORT FreeRDPTargets)
++	install(TARGETS ${MODULE_NAME} COMPONENT libraries EXPORT FreeRDPTargets
++                LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
++                ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
++                RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+ 	add_subdirectory(cli)
+ else()
+ 	install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT client)
+--- origsrc/FreeRDP-1.2.0-beta1-android9/client/common/CMakeLists.txt	2014-09-11 17:46:32.000000000 -0500
++++ src/FreeRDP-1.2.0-beta1-android9/client/common/CMakeLists.txt	2017-03-07 15:09:12.520167600 -0600
+@@ -50,7 +50,6 @@ include_directories(${ZLIB_INCLUDE_DIRS}
+ if (WITH_LIBRARY_VERSIONING)
+   set_target_properties(${MODULE_NAME} PROPERTIES VERSION ${FREERDP_VERSION} SOVERSION ${FREERDP_API_VERSION})
+ endif()
+-set_target_properties(${MODULE_NAME} PROPERTIES PREFIX "lib")
+ 
+ set(${MODULE_PREFIX}_LIBS ${${MODULE_PREFIX}_LIBS}
+ 	${FREERDP_CHANNELS_CLIENT_LIBS})
+@@ -62,7 +61,10 @@ set(${MODULE_PREFIX}_LIBS ${${MODULE_PRE
+ 
+ target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
+ 
+-install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT libraries EXPORT FreeRDPTargets)
++install(TARGETS ${MODULE_NAME} COMPONENT libraries EXPORT FreeRDPTargets
++        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
++        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
++        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+ 
+ set_property(TARGET ${MODULE_NAME} PROPERTY FOLDER "Client/Common")
+ 
+--- origsrc/FreeRDP-1.2.0-beta1-android9/libfreerdp/CMakeLists.txt	2014-09-11 17:46:32.000000000 -0500
++++ src/FreeRDP-1.2.0-beta1-android9/libfreerdp/CMakeLists.txt	2017-03-07 15:11:26.743600500 -0600
+@@ -282,8 +282,10 @@ set_target_properties(${MODULE_NAME} PRO
+ if (WITH_LIBRARY_VERSIONING)
+ 	set_target_properties(${MODULE_NAME} PROPERTIES VERSION ${FREERDP_VERSION} SOVERSION ${FREERDP_API_VERSION})
+ endif()
+-set_target_properties(${MODULE_NAME} PROPERTIES PREFIX "lib")
+ 
+ target_link_libraries(${MODULE_NAME} ${LIBFREERDP_LIBS} winpr)
+-install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT libraries EXPORT FreeRDPTargets)
++install(TARGETS ${MODULE_NAME} COMPONENT libraries EXPORT FreeRDPTargets
++        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
++        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
++        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+ set_property(TARGET ${MODULE_NAME} PROPERTY FOLDER "FreeRDP/libfreerdp")
+--- origsrc/FreeRDP-1.2.0-beta1-android9/winpr/libwinpr/CMakeLists.txt	2014-09-11 17:46:32.000000000 -0500
++++ src/FreeRDP-1.2.0-beta1-android9/winpr/libwinpr/CMakeLists.txt	2017-03-07 15:12:12.273739800 -0600
+@@ -99,8 +99,10 @@ set_target_properties(${MODULE_NAME} PRO
+ if (WITH_LIBRARY_VERSIONING)
+  	set_target_properties(${MODULE_NAME} PROPERTIES VERSION ${WINPR_VERSION_FULL} SOVERSION ${WINPR_VERSION})
+ endif()
+-set_target_properties(${MODULE_NAME} PROPERTIES PREFIX "lib")
+ add_definitions(${WINPR_DEFINITIONS})
+ target_link_libraries(${MODULE_NAME} ${WINPR_LIBS})
+-install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT libraries EXPORT WinPRTargets)
++install(TARGETS ${MODULE_NAME} COMPONENT libraries EXPORT WinPRTargets
++        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
++        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
++        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+ set_property(TARGET ${MODULE_NAME} PROPERTY FOLDER "WinPR/libwinpr")
+--- origsrc/FreeRDP-1.2.0-beta1-android9/winpr/tools/makecert/CMakeLists.txt	2014-09-11 17:46:32.000000000 -0500
++++ src/FreeRDP-1.2.0-beta1-android9/winpr/tools/makecert/CMakeLists.txt	2017-03-07 16:29:13.494761100 -0600
+@@ -32,8 +32,6 @@ set(${MODULE_PREFIX}_LIBS
+ 
+ target_link_libraries(${MODULE_NAME} ${${MODULE_PREFIX}_LIBS})
+ 
+-install(TARGETS ${MODULE_NAME} DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT libraries EXPORT WinPRTargets)
+-
+ add_subdirectory(cli)
+ 
+ set_property(TARGET ${MODULE_NAME} PROPERTY FOLDER "WinPR/Tools")
